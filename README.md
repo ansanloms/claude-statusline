@@ -42,8 +42,12 @@ deno task build   # dist/claude-statusline へバンドル
 
 ## リリース
 
-`deno.json` の `version` を上げてから `v<version>` タグを push すると、GitHub
-Actions がビルドした `dist/claude-statusline` を GitHub Release に添付します。
+`deno.json` の `version` を上げて main へマージしておきます。GitHub Actions の
+Release workflow を手動実行（workflow_dispatch）すると、main の HEAD にタグ
+`v<version>` を打ち、ビルドした `dist/claude-statusline` を添付した GitHub
+Release を作成します。同名タグが既に存在する場合は失敗します。起動時のブランチ
+には main を選んでください（main 以外を選ぶとジョブはスキップされ、何もせずに
+成功扱いで終わります）。
 
 ## 実行要件
 

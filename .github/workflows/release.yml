@@ -1,9 +1,7 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - "v*"
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -11,6 +9,7 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
 
@@ -18,9 +17,20 @@ jobs:
         with:
           deno-version: v2.x
 
-      - name: Verify tag matches deno.json version
+      - name: Resolve tag from deno.json
+        id: version
         run: |
-          test "v$(jq -r .version deno.json)" = "${GITHUB_REF_NAME}"
+          version="$(jq -er '.version' deno.json)"
+          echo "tag=v${version}" >> "$GITHUB_OUTPUT"
+
+      - name: Ensure tag does not already exist
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          if git ls-remote --exit-code --tags origin "refs/tags/${TAG}"; then
+            echo "Tag ${TAG} already exists" >&2
+            exit 1
+          fi
 
       - run: deno task check
       - run: deno task lint
@@ -30,5 +40,6 @@ jobs:
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
         run: |
-          gh release create "${GITHUB_REF_NAME}" dist/claude-statusline --generate-notes
+          gh release create "${TAG}" dist/claude-statusline --target "${GITHUB_SHA}" --generate-notes
