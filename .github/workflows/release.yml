@@ -1,0 +1,36 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Verify tag matches deno.json version
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          test "v$(jq -er '.version' deno.json)" = "${TAG}"
+
+      - run: deno task check
+      - run: deno task lint
+      - run: deno task test
+      - run: deno task build
+
+      - name: Upload release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          gh release upload "${TAG}" dist/claude-statusline --clobber
