@@ -4,7 +4,7 @@
  * Type definitions for the JSON data passed via stdin to statusline commands.
  *
  * Sources:
- * - https://code.claude.com/docs/en/statusline (official docs)
+ * - https://code.claude.com/docs/en/statusline (official docs, confirmed 2026-07)
  * - https://github.com/Piebald-AI/claude-code-system-prompts (system prompt, ccVersion 2.1.47)
  * - https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md
  *
@@ -19,7 +19,16 @@ export interface StatusLineInput {
   /** Unique session ID. */
   session_id: string;
 
-  /** Human-readable session name set via /rename. */
+  /**
+   * UUID of the user prompt currently being processed. Present from after
+   * the first input onward. Available since Claude Code v2.1.196.
+   */
+  prompt_id?: string;
+
+  /**
+   * Human-readable session name. Set via the --name flag or /rename;
+   * otherwise may be an AI-generated title.
+   */
   session_name?: string;
 
   /** Path to the conversation transcript file. */
@@ -30,6 +39,15 @@ export interface StatusLineInput {
 
   /** Information about the active Claude model. */
   model: StatusLineModel;
+
+  /** Effort level. Only present when the model supports the effort parameter. */
+  effort?: StatusLineEffort;
+
+  /** Extended thinking state. */
+  thinking: StatusLineThinking;
+
+  /** Whether fast mode is enabled. */
+  fast_mode: boolean;
 
   /** Workspace directory information. */
   workspace: StatusLineWorkspace;
@@ -42,6 +60,12 @@ export interface StatusLineInput {
 
   /** Context window usage statistics. */
   context_window: StatusLineContextWindow;
+
+  /**
+   * Whether the token count from the most recent API response exceeds 200k.
+   * Fixed threshold regardless of the actual context window size.
+   */
+  exceeds_200k_tokens: boolean;
 
   /** Session cost and performance metrics. */
   cost: StatusLineCost;
@@ -57,6 +81,12 @@ export interface StatusLineInput {
 
   /** Agent metadata. Only present when started with --agent flag. */
   agent?: StatusLineAgent;
+
+  /** Open pull request info. Only present when an open PR is detected. */
+  pr?: StatusLinePr;
+
+  /** Git worktree info. Only present for --worktree sessions. */
+  worktree?: StatusLineWorktree;
 }
 
 export interface StatusLineModel {
@@ -74,8 +104,28 @@ export interface StatusLineWorkspace {
   /** Project root directory path. */
   project_dir: string;
 
-  /** Directories added via /add-dir. */
-  added_dirs?: string[];
+  /** Directories added via /add-dir. Always present; empty array if none. */
+  added_dirs: string[];
+
+  /**
+   * Git worktree name (e.g. "feature-xyz"). Only present inside a linked
+   * `git worktree add` checkout; absent in the main working tree.
+   */
+  git_worktree?: string;
+
+  /** Git repository info. Only present in a git repo with an origin remote. */
+  repo?: StatusLineRepo;
+}
+
+export interface StatusLineRepo {
+  /** Repository host (e.g. "github.com"). */
+  host: string;
+
+  /** Repository owner/organization name. */
+  owner: string;
+
+  /** Repository name. */
+  name: string;
 }
 
 export interface StatusLineOutputStyle {
@@ -84,10 +134,18 @@ export interface StatusLineOutputStyle {
 }
 
 export interface StatusLineContextWindow {
-  /** Total input tokens used in session (cumulative). */
+  /**
+   * Input tokens in the current context window. Prior to Claude Code
+   * v2.1.132 this was cumulative across the session; since v2.1.132 it
+   * reflects only the current context window.
+   */
   total_input_tokens: number;
 
-  /** Total output tokens used in session (cumulative). */
+  /**
+   * Output tokens from the most recent API response. Prior to Claude Code
+   * v2.1.132 this was cumulative across the session; since v2.1.132 it
+   * reflects only the latest response.
+   */
   total_output_tokens: number;
 
   /** Context window size for current model (e.g. 200000). */
@@ -118,7 +176,10 @@ export interface StatusLineTokenUsage {
 }
 
 export interface StatusLineCost {
-  /** Total session cost in USD. */
+  /**
+   * Total session cost in USD. Reset by `/clear` since Claude Code
+   * v2.1.211.
+   */
   total_cost_usd: number;
 
   /** Total session duration in milliseconds. */
@@ -152,7 +213,7 @@ export interface StatusLineRateLimitWindow {
 
 export interface StatusLineVim {
   /** Current vim editor mode. */
-  mode: "INSERT" | "NORMAL";
+  mode: "NORMAL" | "INSERT" | "VISUAL" | "VISUAL LINE";
 }
 
 export interface StatusLineAgent {
@@ -161,6 +222,44 @@ export interface StatusLineAgent {
 
   /** Agent type identifier. */
   type?: string;
+}
+
+export interface StatusLineEffort {
+  /** Effort level. */
+  level: "low" | "medium" | "high" | "xhigh" | "max";
+}
+
+export interface StatusLineThinking {
+  /** Whether extended thinking is enabled. */
+  enabled: boolean;
+}
+
+export interface StatusLinePr {
+  /** Pull request number. */
+  number: number;
+
+  /** Pull request URL. */
+  url: string;
+
+  /** Pull request review state. */
+  review_state?: "approved" | "pending" | "changes_requested" | "draft";
+}
+
+export interface StatusLineWorktree {
+  /** Worktree name. */
+  name: string;
+
+  /** Absolute path to the worktree directory. */
+  path: string;
+
+  /** Worktree branch name. Absent for hook-based worktrees. */
+  branch?: string;
+
+  /** Original working directory before entering the worktree. */
+  original_cwd: string;
+
+  /** Original branch before entering the worktree. Absent for hook-based worktrees. */
+  original_branch?: string;
 }
 
 /**
