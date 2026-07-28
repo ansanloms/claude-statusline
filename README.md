@@ -32,13 +32,34 @@ stdin に JSON が渡されます。フィールドの詳細は Claude Code
 ## 開発
 
 ```sh
-deno task test    # テスト実行
-deno task lint    # lint / フォーマットチェック
-deno task check   # 型チェック
-deno task build   # dist/claude-statusline へバンドル
+deno task test     # テスト実行
+deno task lint     # lint / フォーマットチェック
+deno task check    # 型チェック
+deno task build    # dist/claude-statusline へバンドル
+deno task preview  # 全 fixture を一括描画して見た目を確認する
 ```
 
 `dist/` は `.gitignore` 済みでコミットしません。
+
+### fixture とプレビュー
+
+`fixtures/main/*.json` / `fixtures/sub/*.json` に、それぞれ `statusline main` /
+`statusline sub` への入力サンプルを置いています。JSON 内の `{{PROJECT_DIR}}`
+はリポジトリルートの絶対パスに置き換わるプレースホルダです（`lib/fixtures.ts`
+が読み込み時に置換します）。`deno task preview` はこれらの fixture すべてを
+エントリポイント (`statusline.ts`) 経由で実際に描画し、順番に表示します。表示
+崩れの確認や新しい表示パターンの追加時に使ってください。
+
+### スナップショットテスト
+
+`lib/snapshot.test.ts` は上記 fixture を使い、各コマンドの stdout（ANSI
+エスケープ込み）を `lib/__snapshots__/snapshot.test.ts.snap` と突き合わせます。
+意図した表示変更をした場合は、次のコマンドでスナップショットを更新し、差分を
+確認してからコミットしてください。
+
+```sh
+deno test -A lib/snapshot.test.ts -- --update
+```
 
 ## リリース
 
