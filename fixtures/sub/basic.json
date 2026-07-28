@@ -1,0 +1,20 @@
+{
+  "hook_event_name": "SubagentStatus",
+  "session_id": "session-sub-basic",
+  "transcript_path": "/tmp/transcript.jsonl",
+  "cwd": "/tmp",
+  "columns": 120,
+  "tasks": [
+    {
+      "id": "t1",
+      "name": "implementer",
+      "type": "implementer",
+      "status": "running",
+      "description": "リファクタリング作業",
+      "model": "claude-sonnet-5",
+      "effort": "high",
+      "tokenCount": 45000,
+      "contextWindowSize": 200000
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "hook_event_name": "SubagentStatus",
+  "session_id": "session-sub-mixed",
+  "transcript_path": "/tmp/transcript.jsonl",
+  "cwd": "/tmp",
+  "columns": 120,
+  "tasks": [
+    {
+      "id": "t1",
+      "name": "implementer",
+      "type": "implementer",
+      "status": "running",
+      "description": "実装作業 (低使用率)",
+      "model": "claude-sonnet-5",
+      "tokenCount": 45000,
+      "contextWindowSize": 200000
+    },
+    {
+      "id": "t2",
+      "name": "reviewer",
+      "type": "reviewer",
+      "status": "running",
+      "description": "レビュー作業 (黄帯)",
+      "model": "claude-sonnet-5",
+      "tokenCount": 150000,
+      "contextWindowSize": 200000
+    },
+    {
+      "id": "t3",
+      "name": "researcher",
+      "type": "researcher",
+      "status": "running",
+      "description": "調査作業 (赤帯)",
+      "model": "claude-opus-4-1",
+      "tokenCount": 190000,
+      "contextWindowSize": 200000
+    },
+    {
+      "id": "t4",
+      "name": "pending-agent",
+      "type": "claude",
+      "status": "running",
+      "description": "model 未解決タスク"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "hook_event_name": "SubagentStatus",
+  "session_id": "session-sub-no-token-info",
+  "transcript_path": "/tmp/transcript.jsonl",
+  "cwd": "/tmp",
+  "columns": 120,
+  "tasks": [
+    {
+      "id": "t1",
+      "name": "implementer",
+      "type": "implementer",
+      "status": "running",
+      "description": "起動直後でトークン情報未取得",
+      "model": "claude-sonnet-5"
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+export const snapshot = {};
+
+snapshot[`main: fixture の描画結果をスナップショットと比較する > basic 1`] = `
+"󰚩  Sonnet |   lib |   \$0.012
+[42m[30m Token [39m[49m[100m[37m   :   8% (16K tokens)                                                                   [39m[49m
+[44m[37m Limit 5h :  23% (~02/[39m[49m[100m[37m02 01:00)                                                                 [39m[49m
+[45m[37m Limit 7d :  41% (~02/07 01:00)        [39m[49m[100m[37m                                                         [39m[49m
+session-basic
+"
+`;
+
+snapshot[`main: fixture の描画結果をスナップショットと比較する > fresh-session 1`] = `
+"󰚩  Sonnet |   ./ |   \$0
+[42m[30m[39m[49m[100m[37m Token    :   0% (0 tokens)                                                                     [39m[49m
+session-fresh
+"
+`;
+
+snapshot[`main: fixture の描画結果をスナップショットと比較する > high-usage 1`] = `
+"󰚩  Sonnet |   lib |   \$4.32
+[41m[37m Token    :  93% (186K tokens)                                                           [39m[49m[100m[37m       [39m[49m
+[41m[37m Limit 5h :  96% (~02/02 01:00)                                                             [39m[49m[100m[37m    [39m[49m
+[41m[37m Limit 7d :  94% (~02/07 01:00)                                                           [39m[49m[100m[37m      [39m[49m
+session-high-usage
+"
+`;
+
+snapshot[`main: fixture の描画結果をスナップショットと比較する > mid-usage 1`] = `
+"󰚩  Sonnet |   lib |   \$1.85
+[43m[30m Token    :  75% (150K tokens)                                          [39m[49m[100m[37m                        [39m[49m
+[43m[30m Limit 5h :  72% (~02/02 01:00)                                      [39m[49m[100m[37m                           [39m[49m
+[45m[37m Limit 7d :  68% (~02/07 01:00)                                  [39m[49m[100m[37m                               [39m[49m
+session-mid-usage
+"
+`;
+
+snapshot[`main: fixture の描画結果をスナップショットと比較する > non-git-dir 1`] = `
+"󰚩  Sonnet |   / |   \$0.012
+[42m[30m Token [39m[49m[100m[37m   :   8% (16K tokens)                                                                   [39m[49m
+[44m[37m Limit 5h :  23% (~02/[39m[49m[100m[37m02 01:00)                                                                 [39m[49m
+[45m[37m Limit 7d :  41% (~02/07 01:00)        [39m[49m[100m[37m                                                         [39m[49m
+session-non-git
+"
+`;
+
+snapshot[`sub: fixture の描画結果をスナップショットと比較する > basic 1`] = `
+'{"id":"t1","content":"󰚩  sonnet-5 (high) | implementer: リファクタリング作業 | 22% (45K)"}
+'
+`;
+
+snapshot[`sub: fixture の描画結果をスナップショットと比較する > invalid-columns 1`] = `""`;
+
+snapshot[`sub: fixture の描画結果をスナップショットと比較する > mixed-usage 1`] = `
+'{"id":"t1","content":"󰚩  sonnet-5 | implementer: 実装作業 (低使用率) | 22% (45K)"}
+{"id":"t2","content":"󰚩  sonnet-5 | reviewer: レビュー作業 (黄帯) | \\\\u001b[33m75% (150K)\\\\u001b[39m"}
+{"id":"t3","content":"󰚩  opus-4-1 | researcher: 調査作業 (赤帯) | \\\\u001b[31m95% (190K)\\\\u001b[39m"}
+'
+`;
+
+snapshot[`sub: fixture の描画結果をスナップショットと比較する > narrow 1`] = `
+'{"id":"t1","content":"󰚩  sonnet-5 | implementer: ユーザ認証..."}
+'
+`;
+
+snapshot[`sub: fixture の描画結果をスナップショットと比較する > no-token-info 1`] = `
+'{"id":"t1","content":"󰚩  sonnet-5 | implementer: 起動直後でトークン情報未取得"}
+'
+`;

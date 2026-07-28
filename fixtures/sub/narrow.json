@@ -1,0 +1,19 @@
+{
+  "hook_event_name": "SubagentStatus",
+  "session_id": "session-sub-narrow",
+  "transcript_path": "/tmp/transcript.jsonl",
+  "cwd": "/tmp",
+  "columns": 40,
+  "tasks": [
+    {
+      "id": "t1",
+      "name": "implementer",
+      "type": "implementer",
+      "status": "running",
+      "description": "ユーザ認証まわりのリファクタリングと既存テストの修正、および周辺ドキュメントの更新作業",
+      "model": "claude-sonnet-5",
+      "tokenCount": 45000,
+      "contextWindowSize": 200000
+    }
+  ]
+}

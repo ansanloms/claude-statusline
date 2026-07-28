@@ -1,0 +1,19 @@
+{
+  "hook_event_name": "SubagentStatus",
+  "session_id": "session-sub-invalid-columns",
+  "transcript_path": "/tmp/transcript.jsonl",
+  "cwd": "/tmp",
+  "columns": 0,
+  "tasks": [
+    {
+      "id": "t1",
+      "name": "implementer",
+      "type": "implementer",
+      "status": "running",
+      "description": "columns 不正時は出力なし",
+      "model": "claude-sonnet-5",
+      "tokenCount": 45000,
+      "contextWindowSize": 200000
+    }
+  ]
+}
