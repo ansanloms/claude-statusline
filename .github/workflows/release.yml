@@ -11,26 +11,34 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: denoland/setup-deno@v2
+      - uses: oven-sh/setup-bun@v2
         with:
-          deno-version: v2.x
+          bun-version-file: ".bun-version"
 
-      - name: Verify tag matches deno.json version
+      - name: Verify tag matches package.json version
         env:
           TAG: ${{ github.event.release.tag_name }}
         run: |
-          test "v$(jq -er '.version' deno.json)" = "${TAG}"
+          test "v$(jq -er '.version' package.json)" = "${TAG}"
 
-      - run: deno task check
-      - run: deno task lint
-      - run: deno task test
-      - run: deno task build
+      - run: bun install --frozen-lockfile
+      - run: bun run check
+      - run: bun run lint
+      - run: bun run test
+      - run: bun run build:release
 
-      - name: Upload release asset
+      - name: Smoke test linux-x64 asset
+        run: |
+          sed "s|{{PROJECT_DIR}}|$PWD|g" fixtures/main/basic.json > /tmp/basic.json
+          COLUMNS=100 bun run statusline.ts main < /tmp/basic.json > /tmp/expected.txt
+          COLUMNS=100 ./dist/claude-statusline-linux-x64 main < /tmp/basic.json > /tmp/actual.txt
+          cmp /tmp/expected.txt /tmp/actual.txt
+
+      - name: Upload release assets
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.event.release.tag_name }}
         run: |
-          gh release upload "${TAG}" dist/claude-statusline --clobber
+          gh release upload "${TAG}" dist/claude-statusline-* --clobber

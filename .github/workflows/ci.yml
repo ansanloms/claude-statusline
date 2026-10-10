@@ -10,13 +10,28 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: denoland/setup-deno@v2
+      - uses: oven-sh/setup-bun@v2
         with:
-          deno-version: v2.x
+          bun-version-file: ".bun-version"
 
-      - run: deno task check
-      - run: deno task lint
-      - run: deno task test
-      - run: deno task build
+      - run: bun install --frozen-lockfile
+      - run: bun run check
+      - run: bun run lint
+      - run: bun run test
+      - run: bun run build
+
+      - name: Smoke test compiled binary
+        run: |
+          sed "s|{{PROJECT_DIR}}|$PWD|g" fixtures/main/basic.json > /tmp/basic.json
+          COLUMNS=100 bun run statusline.ts main < /tmp/basic.json > /tmp/expected.txt
+          COLUMNS=100 ./dist/claude-statusline main < /tmp/basic.json > /tmp/actual.txt
+          cmp /tmp/expected.txt /tmp/actual.txt
+          env -u COLUMNS bun run statusline.ts main < /tmp/basic.json > /tmp/expected-nocols.txt
+          mkdir -p /tmp/hostile
+          printf 'preload = ["./p.ts"]\n' > /tmp/hostile/bunfig.toml
+          printf 'console.error("PRELOADED"); process.exit(99);\n' > /tmp/hostile/p.ts
+          printf 'COLUMNS=30\n' > /tmp/hostile/.env
+          (cd /tmp/hostile && env -u COLUMNS "$GITHUB_WORKSPACE/dist/claude-statusline" main < /tmp/basic.json > /tmp/hostile.txt)
+          cmp /tmp/expected-nocols.txt /tmp/hostile.txt
