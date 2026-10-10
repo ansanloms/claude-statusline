@@ -11,13 +11,7 @@ import {
  * stdin から JSON を読み取り、指定した型として返す。
  */
 export const getInput = async <T>(): Promise<T> => {
-  const decoder = new TextDecoder();
-  let input = "";
-  for await (const chunk of Deno.stdin.readable) {
-    input += decoder.decode(chunk);
-  }
-
-  return JSON.parse(input) as T;
+  return JSON.parse(await Bun.stdin.text()) as T;
 };
 
 /**
@@ -64,15 +58,16 @@ export const buildInlineProgressBar = (
   width: number,
   scheme: Partial<ProgressBarColorScheme> = {},
 ): string => {
-  const filled = Math.floor(pct * width / 100);
+  const filled = Math.floor((pct * width) / 100);
   // ラベルが width を超える場合は末尾を "..." で省略する。
   // width が "..." 自体に満たないほど狭いときは省略記号を付けず素朴に切り詰める。
   const ellipsis = "...";
-  const clipped = label.length > width
-    ? width > ellipsis.length
-      ? label.slice(0, width - ellipsis.length) + ellipsis
-      : label.slice(0, Math.max(0, width))
-    : label;
+  const clipped =
+    label.length > width
+      ? width > ellipsis.length
+        ? label.slice(0, width - ellipsis.length) + ellipsis
+        : label.slice(0, Math.max(0, width))
+      : label;
   const splitAt = Math.min(filled, clipped.length);
 
   const labelFilled = clipped.slice(0, splitAt);
@@ -85,11 +80,12 @@ export const buildInlineProgressBar = (
   const filledStr = labelFilled + filledRemainder;
   const unfilledStr = labelUnfilled + unfilledRemainder;
 
-  const paint = pct >= 90
-    ? (scheme.high ?? defaultProgressBarColorScheme.high)
-    : pct >= 70
-    ? (scheme.mid ?? defaultProgressBarColorScheme.mid)
-    : (scheme.low ?? defaultProgressBarColorScheme.low);
+  const paint =
+    pct >= 90
+      ? (scheme.high ?? defaultProgressBarColorScheme.high)
+      : pct >= 70
+        ? (scheme.mid ?? defaultProgressBarColorScheme.mid)
+        : (scheme.low ?? defaultProgressBarColorScheme.low);
 
   return paint(filledStr) + bgBrightBlack(white(unfilledStr));
 };

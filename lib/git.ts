@@ -1,3 +1,4 @@
+import { stat } from "node:fs/promises";
 import * as path from "@std/path";
 
 /**
@@ -5,16 +6,21 @@ import * as path from "@std/path";
  * ディレクトリでない場合は親ディレクトリを基点にする。
  */
 const git = async (filepath: string, args: string[]) => {
-  const command = new Deno.Command("git", {
-    args: [
+  const proc = Bun.spawn(
+    [
+      "git",
       "-C",
-      (await Deno.stat(filepath)).isDirectory
-        ? filepath
-        : path.dirname(filepath),
+      (await stat(filepath)).isDirectory() ? filepath : path.dirname(filepath),
       ...args,
     ],
-  });
-  return await command.output();
+    { stdout: "pipe", stderr: "pipe" },
+  );
+  const [code, stdout, stderr] = await Promise.all([
+    proc.exited,
+    proc.stdout.text(),
+    proc.stderr.text(),
+  ]);
+  return { code, stdout, stderr };
 };
 
 /**
@@ -27,9 +33,9 @@ export const root = async (filepath: string): Promise<string> => {
     "--show-toplevel",
   ]);
   if (code !== 0) {
-    throw new Error(new TextDecoder().decode(stderr));
+    throw new Error(stderr);
   }
-  return new TextDecoder().decode(stdout).trim();
+  return stdout.trim();
 };
 
 /**
@@ -51,12 +57,12 @@ export const commonDir = async (filepath: string): Promise<string> => {
     "--git-common-dir",
   ]);
   if (code !== 0) {
-    throw new Error(new TextDecoder().decode(stderr));
+    throw new Error(stderr);
   }
 
-  const raw = new TextDecoder().decode(stdout).trim();
+  const raw = stdout.trim();
   // 出力が相対パス（例: ".git"）で返るケースに備え、git 実行基点で絶対化する。
-  const base = (await Deno.stat(filepath)).isDirectory
+  const base = (await stat(filepath)).isDirectory()
     ? filepath
     : path.dirname(filepath);
   return path.resolve(base, raw);

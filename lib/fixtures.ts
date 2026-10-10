@@ -1,3 +1,4 @@
+import { readdir, readFile } from "node:fs/promises";
 import * as path from "@std/path";
 
 /**
@@ -6,9 +7,6 @@ import * as path from "@std/path";
 export interface Fixture {
   /** 拡張子を除いたファイル名 (例: "basic")。 */
   name: string;
-
-  /** fixture の種別。読み込み対象のディレクトリ (fixtures/<kind>/) に対応する。 */
-  kind: "main" | "sub";
 
   /** "{{PROJECT_DIR}}" 置換済みの JSON 文字列。 */
   input: string;
@@ -22,28 +20,22 @@ const projectDir = path.resolve(
 );
 
 /**
- * fixtures/<kind>/ 配下の *.json をファイル名昇順で読み込み、
+ * fixtures/main/ 配下の *.json をファイル名昇順で読み込み、
  * "{{PROJECT_DIR}}" プレースホルダをリポジトリルート絶対パスへ置換して返す。
  */
-export const loadFixtures = async (
-  kind: "main" | "sub",
-): Promise<Fixture[]> => {
-  const dir = path.join(projectDir, "fixtures", kind);
+export const loadFixtures = async (): Promise<Fixture[]> => {
+  const dir = path.join(projectDir, "fixtures", "main");
 
-  const names: string[] = [];
-  for await (const entry of Deno.readDir(dir)) {
-    if (entry.isFile && entry.name.endsWith(".json")) {
-      names.push(entry.name);
-    }
-  }
-  names.sort();
+  const names = (await readdir(dir, { withFileTypes: true }))
+    .filter((entry) => entry.isFile() && entry.name.endsWith(".json"))
+    .map((entry) => entry.name)
+    .sort();
 
   const fixtures: Fixture[] = [];
   for (const name of names) {
-    const raw = await Deno.readTextFile(path.join(dir, name));
+    const raw = await readFile(path.join(dir, name), "utf8");
     fixtures.push({
       name: name.replace(/\.json$/, ""),
-      kind,
       input: raw.replaceAll("{{PROJECT_DIR}}", projectDir),
     });
   }
