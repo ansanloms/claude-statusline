@@ -1,5 +1,5 @@
-import * as path from "@std/path";
 import { bgBlue, bgMagenta, white } from "@std/fmt/colors";
+import * as path from "@std/path";
 import {
   buildInlineProgressBar,
   formatCompact,
@@ -13,22 +13,24 @@ import type { StatusLineInput, StatusLineRateLimitWindow } from "./types.ts";
  * プログレスバーの横幅を端末幅に合わせて算出する。
  *
  * Claude Code はスクリプトの stdout を端末に直結せずキャプチャするため、
- * `tput cols` や `Deno.consoleSize()` では端末幅を取得できない。
+ * `tput cols` や `process.stdout.columns` では端末幅を取得できない。
  * 代わりに Claude Code が実行前に設定する `COLUMNS` 環境変数を読む
  * (Claude Code v2.1.153 以降)。末尾の折り返しを避けるため 4 桁マージンを取る。
  * `COLUMNS` が無効・未設定の環境では従来の固定幅 60 にフォールバックする。
  */
 const getBarWidth = (): number => {
-  const cols = Number(Deno.env.get("COLUMNS"));
+  const cols = Number(process.env.COLUMNS);
   return Number.isFinite(cols) && cols > 0 ? cols - 4 : 60;
 };
 
 const getDir = async (input: StatusLineInput) => {
   return (await git.managed(input.workspace.current_dir))
-    ? (path.relative(
-      await git.root(input.workspace.current_dir),
-      input.workspace.current_dir,
-    ).trim() || `.${path.SEPARATOR}`)
+    ? path
+        .relative(
+          await git.root(input.workspace.current_dir),
+          input.workspace.current_dir,
+        )
+        .trim() || `.${path.SEPARATOR}`
     : path.resolve(input.workspace.current_dir);
 };
 
@@ -62,9 +64,11 @@ const buildRateLimitBar = (
 };
 
 const getTokens = (input: StatusLineInput) => {
-  return (input.context_window.current_usage?.input_tokens ?? 0) +
+  return (
+    (input.context_window.current_usage?.input_tokens ?? 0) +
     (input.context_window.current_usage?.cache_creation_input_tokens ?? 0) +
-    (input.context_window.current_usage?.cache_read_input_tokens ?? 0);
+    (input.context_window.current_usage?.cache_read_input_tokens ?? 0)
+  );
 };
 
 export const runMain = async (): Promise<void> => {
@@ -82,7 +86,9 @@ export const runMain = async (): Promise<void> => {
         ["󰚩", model],
         ["", dir],
         ["", `$${cost.toLocaleString()}`],
-      ].map(([icon, label]) => `${icon}  ${label}`).join(" | "),
+      ]
+        .map(([icon, label]) => `${icon}  ${label}`)
+        .join(" | "),
     );
     console.log(
       buildInlineProgressBar(
@@ -91,16 +97,14 @@ export const runMain = async (): Promise<void> => {
         getBarWidth(),
       ),
     );
-    for (
-      const bar of [
-        buildRateLimitBar(input.rate_limits?.five_hour, "5h", {
-          low: (s) => bgBlue(white(s)),
-        }),
-        buildRateLimitBar(input.rate_limits?.seven_day, "7d", {
-          low: (s) => bgMagenta(white(s)),
-        }),
-      ]
-    ) {
+    for (const bar of [
+      buildRateLimitBar(input.rate_limits?.five_hour, "5h", {
+        low: (s) => bgBlue(white(s)),
+      }),
+      buildRateLimitBar(input.rate_limits?.seven_day, "7d", {
+        low: (s) => bgMagenta(white(s)),
+      }),
+    ]) {
       if (bar !== undefined) {
         console.log(bar);
       }

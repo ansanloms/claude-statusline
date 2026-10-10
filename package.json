@@ -1,0 +1,28 @@
+{
+  "name": "claude-statusline",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "dependencies": {
+    "@gunshi/gunshi": "npm:@jsr/gunshi__gunshi@0.37.1",
+    "@std/fmt": "npm:@jsr/std__fmt@1.0.10",
+    "@std/path": "npm:@jsr/std__path@1.1.5"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.15",
+    "@types/node": "24.19.2",
+    "esbuild": "0.28.2",
+    "typescript": "7.0.2"
+  },
+  "scripts": {
+    "test": "node --test --experimental-test-coverage lib/*.test.ts",
+    "check": "tsc --noEmit",
+    "lint": "biome check .",
+    "fix": "biome check --write .",
+    "build": "esbuild statusline.ts --bundle --platform=node --format=esm --target=node24 --outfile=dist/claude-statusline && chmod +x dist/claude-statusline",
+    "preview": "node scripts/preview.ts"
+  }
+}
