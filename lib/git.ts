@@ -4,17 +4,25 @@ import * as path from "node:path";
 /**
  * 指定ファイル/ディレクトリのパスを基点に git コマンドを実行する。
  * ディレクトリでない場合は親ディレクトリを基点にする。
+ * パスが存在しない場合は git を起動せず code 1 を返す (git 管理外として扱う)。
  */
 const git = async (filepath: string, args: string[]) => {
-  const proc = Bun.spawn(
-    [
-      "git",
-      "-C",
-      (await stat(filepath)).isDirectory() ? filepath : path.dirname(filepath),
-      ...args,
-    ],
-    { stdout: "pipe", stderr: "pipe" },
-  );
+  let cwd: string;
+  try {
+    cwd = (await stat(filepath)).isDirectory()
+      ? filepath
+      : path.dirname(filepath);
+  } catch (e) {
+    return {
+      code: 1,
+      stdout: "",
+      stderr: e instanceof Error ? e.message : String(e),
+    };
+  }
+  const proc = Bun.spawn(["git", "-C", cwd, ...args], {
+    stdout: "pipe",
+    stderr: "pipe",
+  });
   const [code, stdout, stderr] = await Promise.all([
     proc.exited,
     proc.stdout.text(),
