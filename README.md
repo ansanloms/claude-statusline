@@ -103,7 +103,7 @@ bun test --update-snapshots lib/snapshot.test.ts
 ## リリース
 
 `package.json` の `version` を上げて main へマージしておきます。GitHub 上で release
-を手動作成してください（タグ `v<version>` を main の HEAD で新規作成
+を手動作成してください（タグ `<version>` を main の HEAD で新規作成
 します）。release の published をトリガに GitHub Actions がテスト・ビルドを
 実行し、ビルドした 6 ファイル（`dist/claude-statusline-<os>-<arch>`、Windows は
 `.exe` 付き）をその release に添付します。タグと
