@@ -3,12 +3,10 @@
  * fixtures/main/*.json をすべてエントリポイント (statusline.ts) 経由で
  * 実際に描画し、並べて表示する。目視での見た目確認用。
  */
-import * as path from "@std/path";
+import { fileURLToPath } from "node:url";
 import { loadFixtures } from "../lib/fixtures.ts";
 
-const entryPath = path.fromFileUrl(
-  new URL("../statusline.ts", import.meta.url),
-);
+const entryPath = fileURLToPath(new URL("../statusline.ts", import.meta.url));
 
 /**
  * 端末幅。非 TTY 環境 (CI・パイプ経由の実行) では process.stdout.columns が

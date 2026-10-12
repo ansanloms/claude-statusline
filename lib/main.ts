@@ -1,5 +1,5 @@
+import * as path from "node:path";
 import { bgBlue, bgMagenta, white } from "@std/fmt/colors";
-import * as path from "@std/path";
 import {
   buildInlineProgressBar,
   formatCompact,
@@ -30,7 +30,7 @@ const getDir = async (input: StatusLineInput) => {
           await git.root(input.workspace.current_dir),
           input.workspace.current_dir,
         )
-        .trim() || `.${path.SEPARATOR}`
+        .trim() || `.${path.sep}`
     : path.resolve(input.workspace.current_dir);
 };
 

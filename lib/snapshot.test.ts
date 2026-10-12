@@ -1,10 +1,8 @@
 import { describe, expect, test } from "bun:test";
-import * as path from "@std/path";
+import { fileURLToPath } from "node:url";
 import { loadFixtures } from "./fixtures.ts";
 
-const entryPath = path.fromFileUrl(
-  new URL("../statusline.ts", import.meta.url),
-);
+const entryPath = fileURLToPath(new URL("../statusline.ts", import.meta.url));
 
 /**
  * fixture の入力を実際にエントリポイント経由で描画し、stdout の生文字列

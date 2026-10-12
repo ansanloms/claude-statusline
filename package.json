@@ -5,8 +5,7 @@
   "type": "module",
   "dependencies": {
     "@gunshi/gunshi": "npm:@jsr/gunshi__gunshi@0.37.1",
-    "@std/fmt": "npm:@jsr/std__fmt@1.0.10",
-    "@std/path": "npm:@jsr/std__path@1.1.5"
+    "@std/fmt": "npm:@jsr/std__fmt@1.0.10"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",

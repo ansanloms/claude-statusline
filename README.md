@@ -72,6 +72,12 @@ bun run preview                # 全 fixture を一括描画して見た目を�
 できます。Bun の version を上げるときは `.bun-version` と `@types/bun` を揃えて
 ください。`dist/` は `.gitignore` 済みでコミットしません。
 
+依存の追加は `bunfig.toml` の設定に従い、exact version で、公開から 7 日未満の
+version は解決しません（lifecycle script も実行しません）。CI では `bun audit`
+を実行し、`bun.lock` の依存を npm の advisory に照会します。JSR 由来の依存
+（`@gunshi/gunshi`、`@std/fmt`）は `npm.jsr.io` が audit に応答しないため、検査
+対象外（skip）になります。
+
 ### fixture とプレビュー
 
 `fixtures/main/*.json` に、`statusline main`

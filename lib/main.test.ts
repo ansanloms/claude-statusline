@@ -1,15 +1,14 @@
 import { expect, test } from "bun:test";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
+import * as path from "node:path";
+import { fileURLToPath } from "node:url";
 import { stripAnsiCode } from "@std/fmt/colors";
-import * as path from "@std/path";
 
 // エントリポイント (statusline.ts) を実際に spawn して疎通させる統合テスト。
 // mockInput は移植元の statusline.test.ts (手動スモークスクリプト) を流用する。
 
-const entryPath = path.fromFileUrl(
-  new URL("../statusline.ts", import.meta.url),
-);
+const entryPath = fileURLToPath(new URL("../statusline.ts", import.meta.url));
 
 test("main: statusline を stdout に出力する", async () => {
   const tmpDir = await mkdtemp(path.join(tmpdir(), "claude-statusline-"));

@@ -1,5 +1,6 @@
 import { readdir, readFile } from "node:fs/promises";
-import * as path from "@std/path";
+import * as path from "node:path";
+import { fileURLToPath } from "node:url";
 
 /**
  * fixture 1 件分のデータ。
@@ -13,11 +14,9 @@ export interface Fixture {
 }
 
 // リポジトリルート。fixture 内の "{{PROJECT_DIR}}" プレースホルダの置換先。
-// 末尾セパレータの除去は path.resolve に任せる。正規表現で SEPARATOR を
+// 末尾セパレータの除去は path.resolve に任せる。正規表現でセパレータを
 // 埋め込むと Windows ("\") でエスケープ扱いになり除去できないため。
-const projectDir = path.resolve(
-  path.fromFileUrl(new URL("..", import.meta.url)),
-);
+const projectDir = path.resolve(fileURLToPath(new URL("..", import.meta.url)));
 
 /**
  * fixtures/main/ 配下の *.json をファイル名昇順で読み込み、

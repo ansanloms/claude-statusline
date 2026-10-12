@@ -1,5 +1,5 @@
 import { stat } from "node:fs/promises";
-import * as path from "@std/path";
+import * as path from "node:path";
 
 /**
  * 指定ファイル/ディレクトリのパスを基点に git コマンドを実行する。
