@@ -3,13 +3,16 @@ name: Release
 on:
   release:
     types: [published]
+  workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  release:
+  build:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     steps:
       - uses: actions/checkout@v7
 
@@ -18,10 +21,15 @@ jobs:
           bun-version-file: ".bun-version"
 
       - name: Verify tag matches package.json version
+        if: github.event_name == 'release'
         env:
           TAG: ${{ github.event.release.tag_name }}
         run: |
           test "$(jq -er '.version' package.json)" = "${TAG}"
+
+      - id: version
+        run: |
+          echo "version=$(jq -er '.version' package.json)" >> "$GITHUB_OUTPUT"
 
       - run: bun install --frozen-lockfile
       - run: bun run check
@@ -35,10 +43,91 @@ jobs:
           COLUMNS=100 bun run statusline.ts main < /tmp/basic.json > /tmp/expected.txt
           COLUMNS=100 ./dist/claude-statusline-linux-x64 main < /tmp/basic.json > /tmp/actual.txt
           cmp /tmp/expected.txt /tmp/actual.txt
+          actual="$(./dist/claude-statusline-linux-x64 --version | tr -d '\r')"
+          test "${actual}" = "$(jq -er .version package.json)"
+
+      - name: Archive dist
+        run: tar -cf dist.tar -C dist .
+
+      - uses: actions/upload-artifact@v7
+        with:
+          path: dist.tar
+          archive: false
+
+  smoke:
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: darwin-arm64
+            runner: macos-15
+          - target: darwin-x64
+            runner: macos-15-intel
+          - target: linux-arm64
+            runner: ubuntu-24.04-arm
+          - target: windows-x64
+            runner: windows-latest
+            ext: .exe
+          - target: windows-arm64
+            runner: windows-11-arm
+            ext: .exe
+    runs-on: ${{ matrix.runner }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist.tar
+
+      - name: Extract dist
+        run: |
+          mkdir dist
+          tar -xf dist.tar -C dist
+
+      - name: Check --version
+        env:
+          BIN: ./dist/claude-statusline-${{ matrix.target }}${{ matrix.ext }}
+          EXPECTED: ${{ needs.build.outputs.version }}
+        run: |
+          actual="$("${BIN}" --version | tr -d '\r')"
+          test "${actual}" = "${EXPECTED}"
+
+      - name: Run main with fixture
+        env:
+          BIN: ./dist/claude-statusline-${{ matrix.target }}${{ matrix.ext }}
+        run: |
+          if [ "${RUNNER_OS}" = "Windows" ]; then
+            project_dir="$(cygpath -m "$PWD")"
+          else
+            project_dir="$PWD"
+          fi
+          sed "s|{{PROJECT_DIR}}|${project_dir}|g" fixtures/main/basic.json > "${RUNNER_TEMP}/basic.json"
+          COLUMNS=100 "${BIN}" main < "${RUNNER_TEMP}/basic.json" > "${RUNNER_TEMP}/stdout.txt" 2> "${RUNNER_TEMP}/stderr.txt"
+          cat "${RUNNER_TEMP}/stdout.txt"
+          grep -q Sonnet "${RUNNER_TEMP}/stdout.txt"
+          test ! -s "${RUNNER_TEMP}/stderr.txt"
+
+  upload:
+    needs: [build, smoke]
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist.tar
+
+      - name: Extract dist
+        run: |
+          mkdir dist
+          tar -xf dist.tar -C dist
 
       - name: Upload release assets
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.event.release.tag_name }}
         run: |
-          gh release upload "${TAG}" dist/claude-statusline-* --clobber
+          gh release upload "${TAG}" dist/claude-statusline-* --clobber --repo ${{ github.repository }}
