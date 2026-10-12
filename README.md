@@ -108,6 +108,10 @@ bun test --update-snapshots lib/snapshot.test.ts
 実行し、ビルドした 6 ファイル（`dist/claude-statusline-<os>-<arch>`、Windows は
 `.exe` 付き）をその release に添付します。タグと
 `package.json` の `version` が一致しない場合は workflow が失敗し、asset は
-添付されません。workflow はタグのコミット時点のファイルで実行されるため、失敗
-した場合は release とタグを削除し、修正を main へ取り込んでから作り直して
-ください（run の再実行では回復しません）。
+添付されません。smoke test は darwin-x64 / darwin-arm64 / linux-arm64 /
+windows-x64 / windows-arm64 の 5 target をネイティブ runner で実行し、
+linux-x64 は build job で出力と version を確認します。asset は
+これらがすべて通った後に添付されます。`workflow_dispatch` で手動実行すると、
+release を作らずに build と smoke test だけを試せます。workflow はタグの
+コミット時点のファイルで実行されるため、失敗した場合は release とタグを削除し、
+修正を main へ取り込んでから作り直してください（run の再実行では回復しません）。
