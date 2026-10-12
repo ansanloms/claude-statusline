@@ -3,22 +3,23 @@
   "version": "0.0.1",
   "private": true,
   "type": "module",
+  "scripts": {
+    "test": "bun test --parallel --coverage",
+    "check": "tsc --noEmit",
+    "lint": "oxlint --deny-warnings && oxfmt --check",
+    "fix": "oxlint --fix && oxfmt",
+    "build": "bun run scripts/build-release.ts host",
+    "build:release": "bun run scripts/build-release.ts",
+    "preview": "bun run scripts/preview.ts"
+  },
   "dependencies": {
     "@gunshi/gunshi": "npm:@jsr/gunshi__gunshi@0.37.1",
     "@std/fmt": "npm:@jsr/std__fmt@1.0.10"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.15",
     "@types/bun": "1.4.2",
+    "oxfmt": "0.72.0",
+    "oxlint": "1.87.0",
     "typescript": "7.0.2"
-  },
-  "scripts": {
-    "test": "bun test --parallel --coverage",
-    "check": "tsc --noEmit",
-    "lint": "biome check .",
-    "fix": "biome check --write .",
-    "build": "bun run scripts/build-release.ts host",
-    "build:release": "bun run scripts/build-release.ts",
-    "preview": "bun run scripts/preview.ts"
   }
 }
