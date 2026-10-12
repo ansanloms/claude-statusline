@@ -1,0 +1,7 @@
+[install]
+# 公開から 7 日経っていない version を解決しない (サプライチェーン対策)
+minimumReleaseAge = 604800
+# 依存の lifecycle script を実行しない
+ignoreScripts = true
+# bun add は exact version で書く
+exact = true

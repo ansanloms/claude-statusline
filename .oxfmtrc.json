@@ -1,0 +1,15 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "tabWidth": 2,
+  "useTabs": false,
+  "singleQuote": false,
+  "printWidth": 80,
+  "ignorePatterns": [
+    "dist",
+    "coverage",
+    "node_modules",
+    "fixtures",
+    "lib/__snapshots__",
+    "bun.lock"
+  ]
+}

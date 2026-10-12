@@ -1,26 +1,17 @@
-import { assert, assertEquals } from "@std/assert";
+import { expect, test } from "bun:test";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import * as path from "node:path";
+import { fileURLToPath } from "node:url";
 import { stripAnsiCode } from "@std/fmt/colors";
-import * as path from "@std/path";
 
 // エントリポイント (statusline.ts) を実際に spawn して疎通させる統合テスト。
 // mockInput は移植元の statusline.test.ts (手動スモークスクリプト) を流用する。
 
-const entryPath = path.fromFileUrl(
-  new URL("../statusline.ts", import.meta.url),
-);
+const entryPath = fileURLToPath(new URL("../statusline.ts", import.meta.url));
 
-// エントリポイント (statusline.ts) の shebang と同じ権限セットで spawn する。
-// -A で流すと必要権限の増加に気づけず、実運用の statusline だけが黙って壊れるため。
-const runArgs = [
-  "run",
-  "--allow-env",
-  "--allow-read",
-  "--allow-run=git",
-  entryPath,
-];
-
-Deno.test("main: statusline を stdout に出力する", async () => {
-  const tmpDir = await Deno.makeTempDir();
+test("main: statusline を stdout に出力する", async () => {
+  const tmpDir = await mkdtemp(path.join(tmpdir(), "claude-statusline-"));
   try {
     const mockInput = {
       hook_event_name: "Status",
@@ -71,76 +62,34 @@ Deno.test("main: statusline を stdout に出力する", async () => {
       },
     };
 
-    const command = new Deno.Command(Deno.execPath(), {
-      args: [...runArgs, "main"],
-      stdin: "piped",
-      stdout: "piped",
-      stderr: "piped",
+    const child = Bun.spawn([process.execPath, entryPath, "main"], {
+      stdin: "pipe",
+      stdout: "pipe",
+      stderr: "pipe",
     });
-    const child = command.spawn();
 
-    const writer = child.stdin.getWriter();
-    await writer.write(new TextEncoder().encode(JSON.stringify(mockInput)));
-    await writer.close();
+    child.stdin.write(JSON.stringify(mockInput));
+    await child.stdin.end();
 
-    const { code, stdout, stderr } = await child.output();
+    const [code, rawOut, stderr] = await Promise.all([
+      child.exited,
+      child.stdout.text(),
+      child.stderr.text(),
+    ]);
     // ANSI エスケープが単語の途中(色境界)に挟まることがあるため、
     // 文字列比較は stripAnsiCode 後に行う。
-    const out = stripAnsiCode(new TextDecoder().decode(stdout));
+    const out = stripAnsiCode(rawOut);
 
     if (code !== 0) {
-      console.error(new TextDecoder().decode(stderr));
+      console.error(stderr);
     }
-    assertEquals(code, 0);
-    assert(out.includes("Sonnet"));
-    assert(out.includes("test-session-123"));
-    assert(out.includes("Token"));
-    assert(out.includes("Limit 5h"));
-    assert(out.includes("Limit 7d"));
+    expect(code).toBe(0);
+    expect(out.includes("Sonnet")).toBe(true);
+    expect(out.includes("test-session-123")).toBe(true);
+    expect(out.includes("Token")).toBe(true);
+    expect(out.includes("Limit 5h")).toBe(true);
+    expect(out.includes("Limit 7d")).toBe(true);
   } finally {
-    await Deno.remove(tmpDir, { recursive: true });
+    await rm(tmpDir, { recursive: true, force: true });
   }
-});
-
-Deno.test("sub: subagent の行を JSON で出力する", async () => {
-  const mockInput = {
-    hook_event_name: "SubagentStatus",
-    session_id: "s",
-    transcript_path: "/tmp/x",
-    cwd: "/tmp",
-    columns: 120,
-    tasks: [
-      {
-        id: "t1",
-        name: "implementer",
-        type: "implementer",
-        status: "running",
-        description: "テスト",
-        model: "claude-sonnet-5",
-      },
-    ],
-  };
-
-  const command = new Deno.Command(Deno.execPath(), {
-    args: [...runArgs, "sub"],
-    stdin: "piped",
-    stdout: "piped",
-    stderr: "piped",
-  });
-  const child = command.spawn();
-
-  const writer = child.stdin.getWriter();
-  await writer.write(new TextEncoder().encode(JSON.stringify(mockInput)));
-  await writer.close();
-
-  const { code, stdout, stderr } = await child.output();
-  const out = new TextDecoder().decode(stdout);
-
-  if (code !== 0) {
-    console.error(new TextDecoder().decode(stderr));
-  }
-  assertEquals(code, 0);
-  const firstLine = out.split("\n")[0];
-  const parsed = JSON.parse(firstLine);
-  assertEquals(parsed.id, "t1");
 });

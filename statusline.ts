@@ -1,9 +1,8 @@
-#!/usr/bin/env -S deno run --allow-env --allow-read --allow-run=git
+#!/usr/bin/env bun
 
 import { cli, define } from "@gunshi/gunshi";
-import denoJson from "./deno.json" with { type: "json" };
 import { runMain } from "./lib/main.ts";
-import { runSub } from "./lib/sub.ts";
+import pkg from "./package.json" with { type: "json" };
 
 const mainCommand = define({
   name: "main",
@@ -13,34 +12,25 @@ const mainCommand = define({
   },
 });
 
-const subCommand = define({
-  name: "sub",
-  description: "Render status lines for subagent tasks (agent panel)",
-  run: async () => {
-    await runSub();
-  },
-});
-
 const rootCommand = define({
   name: "claude-statusline",
   description: "Claude Code status line renderer",
   run: () => {
-    console.error("Usage: claude-statusline <main|sub>");
-    Deno.exit(1);
+    console.error("Usage: claude-statusline <main>");
+    process.exit(1);
   },
 });
 
-await cli(Deno.args, rootCommand, {
+await cli(process.argv.slice(2), rootCommand, {
   name: "claude-statusline",
-  version: denoJson.version,
+  version: pkg.version,
   description: "Claude Code status line renderer",
   // gunshi の global options プラグインはコマンド実行前に必ずヘッダーを
-  // stdout へ出力する (--help の有無を問わない)。statusline / subagent
-  // statusline は生の stdout をそのまま解釈されるため、余計な行を出力
-  // フォーマットに混入させないよう明示的に無効化する。
+  // stdout へ出力する (--help の有無を問わない)。statusline は生の stdout を
+  // そのまま解釈されるため、余計な行を出力フォーマットに混入させないよう
+  // 明示的に無効化する。
   renderHeader: null,
   subCommands: {
     main: mainCommand,
-    sub: subCommand,
   },
 });
