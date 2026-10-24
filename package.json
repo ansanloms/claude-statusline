@@ -17,7 +17,7 @@
     "@std/fmt": "npm:@jsr/std__fmt@1.0.10"
   },
   "devDependencies": {
-    "@types/bun": "1.4.2",
+    "@types/bun": "1.4.3",
     "oxfmt": "0.72.0",
     "oxlint": "1.87.0",
     "typescript": "7.0.2"
