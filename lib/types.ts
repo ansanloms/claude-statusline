@@ -195,8 +195,21 @@ export interface StatusLineCost {
   total_lines_removed: number;
 }
 
+/**
+ * Rate limit windows. Appears only for claude.ai Pro, Max, Ultra subscribers,
+ * or behind a Claude apps gateway with a spend limit, and only after the first
+ * API response in the session.
+ * Source: https://code.claude.com/docs/en/statusline (confirmed 2026-11-03)
+ */
 export interface StatusLineRateLimits {
-  /** 5-hour rate limit window. May be independently absent. */
+  /**
+   * 5-hour rate limit window. May be independently absent.
+   * Verified Ultra accounts have no five-hour limit (see the support article
+   * below), so this window is expected to be absent for them. The statusline
+   * docs only guarantee that each window may be independently absent; whether
+   * Ultra sends it is not documented there.
+   * Source: https://support.claude.com/en/articles/11647753-how-do-usage-and-length-limits-work (confirmed 2026-11-03)
+   */
   five_hour?: StatusLineRateLimitWindow;
 
   /** 7-day rate limit window. May be independently absent. */
