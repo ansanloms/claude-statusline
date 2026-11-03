@@ -51,3 +51,11 @@ exports[`main non-git-dir 1`] = `
 session-non-git
 "
 `;
+
+exports[`main seven-day-only 1`] = `
+"󰚩  Sonnet |   lib |   $0.012
+\x1B[42m\x1B[30m Token \x1B[39m\x1B[49m\x1B[100m\x1B[37m   :   8% (16K tokens)                                                                   \x1B[39m\x1B[49m
+\x1B[45m\x1B[37m Limit 7d :  41% (~02/07 01:00)        \x1B[39m\x1B[49m\x1B[100m\x1B[37m                                                         \x1B[39m\x1B[49m
+session-seven-day-only
+"
+`;
